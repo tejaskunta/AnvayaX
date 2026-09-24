@@ -1,0 +1,156 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* AnvayaX — control-room palette. The tier ladder is the domain's own
+ * hazard-signage language; everything else stays steel-quiet. */
+:root {
+  --ink-950: #0b0e11;
+  --ink-900: #10151a;
+  --ink-850: #141b21;
+  --ink-800: #1b242c;
+  --line: #26313b;
+  --line-strong: #33424e;
+  --chalk: #e6ebef;
+  --dim: #93a4b1;
+  --faint: #5f7180;
+
+  --tier-nm: #57a0a4;
+  --tier-rec: #cba32f;
+  --tier-psif: #e07a3f;
+  --tier-asif: #d24a45;
+  --caution: #f2b705;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  background: var(--ink-950);
+  color: var(--chalk);
+  font-family: var(--font-body), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: rgba(87, 160, 164, 0.35);
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--line-strong) transparent;
+}
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+*::-webkit-scrollbar-thumb {
+  background: var(--line-strong);
+  border-radius: 4px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+:focus-visible {
+  outline: 2px solid var(--tier-nm);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+@layer components {
+  .panel {
+    @apply border bg-[var(--ink-900)] rounded-[3px];
+    border-color: var(--line);
+  }
+  .label-micro {
+    @apply text-[11px] tracking-wide text-[var(--faint)] font-medium;
+  }
+  .num {
+    font-family: var(--font-mono), ui-monospace, monospace;
+    font-variant-numeric: tabular-nums;
+  }
+  .btn {
+    @apply inline-flex items-center gap-2 rounded-[3px] border px-3 py-1.5 text-sm font-medium transition-colors;
+    border-color: var(--line-strong);
+    color: var(--chalk);
+    background: var(--ink-800);
+  }
+  .btn:hover {
+    border-color: var(--faint);
+    background: var(--ink-850);
+  }
+  .btn-primary {
+    @apply inline-flex items-center gap-2 rounded-[3px] px-4 py-2 text-sm font-semibold transition-colors;
+    background: var(--caution);
+    color: #14100a;
+  }
+  .btn-primary:hover {
+    filter: brightness(1.08);
+  }
+  .btn-primary:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+  .btn-ghost {
+    @apply inline-flex items-center gap-1.5 rounded-[3px] px-2.5 py-1 text-xs font-medium transition-colors;
+    color: var(--dim);
+    border: 1px solid transparent;
+  }
+  .btn-ghost:hover {
+    color: var(--chalk);
+    border-color: var(--line-strong);
+  }
+  .field {
+    @apply w-full rounded-[3px] border bg-[var(--ink-950)] px-3 py-2 text-sm text-[var(--chalk)] placeholder:text-[var(--faint)] focus:border-[var(--tier-nm)] focus:outline-none;
+    border-color: var(--line);
+  }
+  select.field {
+    @apply appearance-none pr-8;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%235f7180'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+  }
+}
+
+@keyframes pulse-dot {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+.dot-live {
+  animation: pulse-dot 2.4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dot-live,
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* Safety-tape hairline: used once, on the SIF banner. */
+.hazard-rule {
+  height: 3px;
+  background: repeating-linear-gradient(
+    -45deg,
+    var(--caution) 0 8px,
+    var(--ink-950) 8px 16px
+  );
+  opacity: 0.7;
+}
+
+mark.trigger {
+  background: rgba(203, 163, 47, 0.22);
+  color: #ecd9a0;
+  border-bottom: 1px solid rgba(203, 163, 47, 0.55);
+  border-radius: 2px;
+  padding: 0 1px;
+}

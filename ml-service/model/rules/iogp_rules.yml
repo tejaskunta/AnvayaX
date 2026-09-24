@@ -1,0 +1,112 @@
+# IOGP Report 459 Life-Saving Rules — trigger-phrase packs (regex, case-insensitive).
+# Each rule: display name, list of regex patterns, and an optional severity prior
+# (how strongly this rule's presence hints at SIF-potential, used only by the
+# RULES_ONLY heuristic fallback — never by the transformer).
+rules:
+  - name: Bypassing Safety Controls
+    severity_prior: 0.8
+    phrases:
+      - "\\bbypass(ed|ing)?\\b"
+      - "\\bdefeat(ed|ing)?\\s+(the\\s+)?(interlock|safety|alarm|trip)\\b"
+      - "\\boverride(n)?d?\\b.*\\b(safety|interlock|alarm|trip)\\b"
+      - "\\bwithout\\s+(a\\s+)?(ptw|permit)\\b"
+      - "\\b(ptw|permit)\\s+(not|wasn't|never|absent|missing)\\b"
+      - "\\bno\\s+(ptw|permit)\\b"
+      - "\\btamper(ed|ing)?\\b"
+      - "\\bshort[- ]?circuits?d?\\b"
+      - "\\b(disabled|cut\\s+off|muted)\\s+(the\\s+)?(alarm|interlock|trip|esd)\\b"
+      - "\\bjump(ed)?\\s+(the\\s+)?(interlock|trip)\\b"
+  - name: Confined Space
+    severity_prior: 0.9
+    phrases:
+      - "\\bconfined\\s+space\\b"
+      - "\\b(vessel|tank|sump|pit|manhole|manway)\\s+entry\\b"
+      - "\\bentry\\s+(in|into|to)\\s+(the\\s+)?(vessel|tank|space)\\b"
+      - "\\bin(side|to)\\s+(the\\s+)?(vessel|storage\\s+tank|tank|sump|pit|manhole|enclosed\\s+space)\\b"
+      - "\\bstorage\\s+tank\\b"
+      - "\\bgas\\s+test(ing|ed)?\\b"
+      - "\\bstandby\\s+(man|person)\\b"
+      - "\\brebreather\\b"
+      - "\\b(oxygen|h2s|h₂s)\\s+(deficient|low|level)\\b"
+      - "\\bpurge(d|s)?\\b.*\\bbefore\\b.*\\bentry\\b"
+  - name: Driving Safety
+    severity_prior: 0.7
+    phrases:
+      - "\\bover[- ]?speed\\w*\\b"
+      - "\\bexceeded\\b.*\\b(speed|limit)\\b"
+      - "\\bspeed\\s+(limit\\s+)?(violation|exceed)\\b"
+      - "\\bseat\\s?belt\\b"
+      - "\\b(fatigue|drows|falling\\s+asleep)\\w*\\b"
+      - "\\b(rear[- ]?end|collid|crash|accident)\\w*\\b.*\\b(vehicle|jeep|tractor|tanker|car)\\b"
+      - "\\b(vehicle|jeep|tanker|tractor)\\b.*\\b(rolled|overturn|jackknif)\\w*\\b"
+      - "\\blease\\s+road\\b"
+      - "\\bhit\\s+(by|a)\\s+(vehicle|jeep|truck)\\b"
+  - name: Energy Isolation
+    severity_prior: 0.9
+    phrases:
+      - "\\bloto\\b"
+      - "\\block[- ]?out|tag[- ]?out\\b"
+      - "\\blines?\\s+break\\w*\\b"
+      - "\\buncontrolled\\s+(energy|release)\\b"
+      - "\\bresidual\\s+(pressure|energy)\\b"
+      - "\\bstored\\s+energy\\b"
+      - "\\bbleed(ed|ing)?\\s+(the\\s+)?line\\b"
+      - "\\bde[- ]?energiz\\w*\\b"
+      - "\\bnot\\s+(isolated|depressurized|drained)\\b"
+      - "\\bspool\\s+(removed|removal|piece)\\b"
+  - name: Hot Work
+    severity_prior: 0.8
+    phrases:
+      - "\\bhot\\s+work\\b"
+      - "\\bweld\\w*\\b"
+      - "\\bgrind\\w*\\b"
+      - "\\bcutting\\s+torch|torch\\s+cutting\\b"
+      - "\\bburn\\w*\\b.*\\b(pipe|vessel|tank|metal)\\b"
+      - "\\bspark\\w*\\b"
+      - "\\bfire\\s+watch(er)?\\b"
+      - "\\bangle\\s+grinder\\b"
+      - "\\bflammab\\w*\\b.*\\b(near|close|vicinity|area)\\b"
+  - name: Line of Fire
+    severity_prior: 0.9
+    phrases:
+      - "\\bline\\s+of\\s+fire\\b"
+      - "\\bstruck\\s+by\\b"
+      - "\\bsuspended\\s+load\\b"
+      - "\\bunder\\s+(the\\s+)?load\\b"
+      - "\\bhydro\\s?test\\w*\\b"
+      - "\\bpressure\\s+test\\w*\\b"
+      - "\\b(gauge|glass)\\s+(blew|ruptur|burst)\\w*\\b"
+      - "\\beject\\w*\\b"
+      - "\\bpinch\\s+point\\b"
+      - "\\bswing\\s+radius\\b"
+      - "\\brecoil\\w*\\b"
+  - name: Safe Mechanical Lifting
+    severity_prior: 0.85
+    phrases:
+      - "\\bcrane\\b"
+      - "\\blift(ing|ed)?\\b"
+      - "\\b(hoist|sling|shackle|rigging|webbing)\\w*\\b"
+      - "\\bboom\\b.*\\b(lower|fail|collapse)\\w*\\b"
+      - "\\bcertificat\\w*\\b.*\\b(lift|crane|expir)\\w*\\b"
+      - "\\boverload\\w*\\b"
+      - "\\bdropped\\s+object\\b"
+      - "\\bfell?\\s+(from|off)\\b.*\\b(load|hook|crane|sling)\\b"
+  - name: Working at Height
+    severity_prior: 0.9
+    phrases:
+      - "\\bscaffold\\w*\\b"
+      - "\\bworking\\s+at\\s+height\\b"
+      - "\\bfall(en|ing|ed)?\\b.*\\b(height|scaffold|platform|ladder|roof|structure)\\b"
+      - "\\b(harness|lanyard|shock\\s+absorber)\\b"
+      - "\\bladder\\b"
+      - "\\bunprotected\\s+(edge|opening)\\b"
+      - "\\bmewp\\b|\\bcherry\\s?picker\\b"
+      - "\\bclimb(ed|ing)?\\b.*\\b(structure|vessel|tank|column)\\b"
+  - name: Controlled Substances
+    severity_prior: 0.5
+    phrases:
+      - "\\balcohol\\b"
+      - "\\bdrunk\\b|\\bintoxicat\\w*\\b"
+      - "\\bunder\\s+the\\s+influence\\b"
+      - "\\bdrug\\s+(test|screening)\\b"
+      - "\\bsubstance\\s+abuse\\b"

@@ -1,0 +1,27 @@
+# AnvayaX ML service — Python 3.11/3.12 (3.14 too new for torch wheels)
+fastapi>=0.110
+uvicorn[standard]>=0.29
+pydantic>=2.6
+python-multipart>=0.0.9
+
+# ML core — pinned for macOS Intel (torch caps at 2.2.2 there, which requires
+# NumPy<2 and transformers<5). On Apple Silicon/Colab these same pins work.
+torch==2.2.2
+transformers==4.44.2
+peft==0.11.1
+sentence-transformers==3.0.1
+scikit-learn==1.4.2
+spacy>=3.7,<3.9
+
+# data
+pandas>=2.2
+numpy==1.26.4
+scipy==1.13.1
+openpyxl>=3.1
+pyyaml>=6.0
+
+# synthetic generator (Groq-only provider)
+groq>=0.9
+
+# dev
+pytest>=8.0

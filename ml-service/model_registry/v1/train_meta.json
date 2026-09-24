@@ -1,0 +1,19 @@
+{
+  "version": "v1",
+  "base_model": "distilbert-base-uncased",
+  "from_base": true,
+  "loss": "weighted_ce",
+  "epochs": 6,
+  "seed": 42,
+  "device": "cpu",
+  "train_rows": 183,
+  "val_rows": 34,
+  "pool_rows": 217,
+  "class_distribution": {
+    "near_miss": 89,
+    "recordable": 85,
+    "psif": 31,
+    "asif": 12
+  },
+  "best_val_loss": 0.74609
+}

@@ -1,0 +1,23 @@
+{
+  "provider": "groq",
+  "model": "qwen/qwen3.8-27b",
+  "annotator_model": "openai/gpt-oss-20b",
+  "prompt_hash": "b2dded14ea46ef6a",
+  "generated_at": "2026-09-22T16:09:25Z",
+  "counts": {
+    "near_miss": 220,
+    "recordable": 210,
+    "psif": 90,
+    "asif": 30
+  },
+  "tier_plan": {
+    "near_miss": 220,
+    "recordable": 205,
+    "psif": 95,
+    "asif": 30
+  },
+  "sif_potential_share": 0.2182,
+  "kappa_sample": 150,
+  "seed": 42,
+  "note": "annotator_a = model-assisted planned tier; annotator_b = independent second Groq pass (text-only). Disagreements excluded from training gold."
+}
