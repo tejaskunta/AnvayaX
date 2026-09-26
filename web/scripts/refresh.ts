@@ -27,7 +27,10 @@ import { mlApi } from "../lib/api";
 const WEB_ROOT = process.cwd();
 const ML_ROOT = path.resolve(WEB_ROOT, "..", "ml-service");
 const DB_PATH = process.env.DATABASE_URL ?? path.join(WEB_ROOT, "db", "sqlite.db");
-const PY = path.join(ML_ROOT, ".venv", "bin", "python");
+// venv layout differs by OS: POSIX uses bin/python, Windows Scripts\python.exe.
+const PY = process.env.ML_PYTHON ??
+  path.join(ML_ROOT, ".venv", process.platform === "win32" ? "Scripts" : "bin",
+    process.platform === "win32" ? "python.exe" : "python");
 const DRY = process.argv.includes("--dry-run");
 
 const SIF = new Set(["psif", "asif"]);

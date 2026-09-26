@@ -21,7 +21,7 @@ from pathlib import Path
 import numpy as np
 import torch
 from sklearn.utils.class_weight import compute_class_weight
-from torch.utils.data import DataLoader, Dataset
+from torch.utils.data import DataLoader, Dataset, WeightedRandomSampler
 
 from .config import (
     BASE_MODEL,
@@ -31,6 +31,7 @@ from .config import (
     LORA_TARGET_MODULES,
     MAX_SEQ_LEN,
     SEED,
+    SIF_POSITIVE,
     TIERS,
     TIER_INDEX,
 )
@@ -132,7 +133,21 @@ def train(args):
     def encode(rows):
         return TextDataset([r["text"] for r in rows], [TIER_INDEX[r["tier"]] for r in rows], tok)
 
-    dl_train = DataLoader(encode(train_rows), batch_size=args.batch_size, shuffle=True)
+    # Class-balanced batches: with a ~4:1 majority:minority pool, plain shuffling
+    # lets whole batches go SIF-free and the model coasts on the majors (v2/v3
+    # post-mortem: focal/weighted loss alone still collapsed psif recall to 0.375).
+    # WeightedRandomSampler oversamples minority rows so every batch carries them.
+    if getattr(args, "balanced", True):
+        y_train = [TIER_INDEX[r["tier"]] for r in train_rows]
+        class_counts = np.bincount(y_train, minlength=len(TIERS)).astype(float)
+        sample_w = torch.tensor([1.0 / class_counts[c] for c in y_train])
+        sampler: object = WeightedRandomSampler(sample_w, num_samples=len(train_rows),
+                                                replacement=True)
+        shuffle = False
+    else:
+        sampler, shuffle = None, True
+    dl_train = DataLoader(encode(train_rows), batch_size=args.batch_size,
+                          shuffle=shuffle, sampler=sampler)
     dl_val = DataLoader(encode(val_rows), batch_size=args.batch_size)
 
     # class weights on the training pool
@@ -142,6 +157,13 @@ def train(args):
     weights = torch.ones(len(TIERS), device=device)
     for c, w in zip(classes, cw):
         weights[c] = float(w)
+    # Recall-leaning posture for the safety-critical minority (docs: "accept FPs,
+    # never miss a precursor"). sif_boost > 1 raises psif/asif weights above the
+    # balanced point; 1.0 keeps plain class-balanced behaviour.
+    sif_boost = float(getattr(args, "sif_boost", 1.0))
+    if sif_boost != 1.0:
+        for t in SIF_POSITIVE:
+            weights[TIER_INDEX[t]] *= sif_boost
 
     if args.loss == "focal":
         criterion = FocalLoss(gamma=args.gamma, weight=weights)
@@ -150,12 +172,21 @@ def train(args):
 
     opt = torch.optim.AdamW([p for p in model.parameters() if p.requires_grad], lr=args.lr)
 
-    # checkpoint selection: keep the adapter from the epoch with the best weighted
-    # val loss (v2 post-mortem: final-epoch saves over-fit the majority classes and
-    # collapse minority SIF recall — val loss is class-weighted, so it tracks them).
+    # checkpoint selection: the gate protects SIF-positive recall, so select the
+    # epoch with the best val-split SIF recall — but ONLY among epochs whose val
+    # accuracy clears MIN_VAL_ACC. The floor is what keeps selection honest: pure
+    # max-recall shipped a first v3 that flagged every row SIF (gate recall
+    # 1.0000, frozen-set accuracy 0.327 — useless), while pure F2/loss selection
+    # shipped healthy-looking models that missed the gate's hard SIF rows
+    # (0.545). Tie-break on accuracy so, at equal recall, the less degenerate
+    # epoch wins. The frozen regression set is NEVER used here.
     from peft.utils import get_peft_model_state_dict, set_peft_model_state_dict
 
+    MIN_VAL_ACC = 0.60
+    sif_idx = {TIER_INDEX[t] for t in SIF_POSITIVE}
     best_val_loss = float("inf")
+    best_val_acc = -1.0
+    best_sif_recall = -1.0
     best_epoch = 0
     best_state: dict | None = None
     for epoch in range(args.epochs):
@@ -171,9 +202,10 @@ def train(args):
             torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
             opt.step()
             tot += loss.item() * labels.size(0)
-        # val
+        # val — SIF (psif∪asif) recall + accuracy on the held-out val split
         model.eval()
         vtot, vcorrect, vtotal = 0.0, 0, 0
+        v_sif_hit = v_sif_total = 0
         with torch.no_grad():
             for batch in dl_val:
                 batch = {k: v.to(device) for k, v in batch.items()}
@@ -181,12 +213,25 @@ def train(args):
                 logits = model(**batch).logits
                 vloss = criterion(logits, labels).item() * labels.size(0)
                 vtot += vloss
-                vcorrect += (logits.argmax(-1) == labels).sum().item()
+                preds = logits.argmax(-1)
+                vcorrect += (preds == labels).sum().item()
                 vtotal += labels.size(0)
+                sif_mask = torch.tensor(
+                    [int(l.item() in sif_idx) for l in labels],
+                    device=device, dtype=torch.bool)
+                v_sif_total += int(sif_mask.sum().item())
+                v_sif_hit += int(((preds == labels) & sif_mask).sum().item())
         val_loss = vtot / max(vtotal, 1)
+        val_acc = vcorrect / max(vtotal, 1)
+        sif_recall = v_sif_hit / max(v_sif_total, 1)
         print(f"epoch {epoch+1}/{args.epochs} train_loss={tot/len(y):.4f} "
-              f"val_loss={val_loss:.4f} val_acc={vcorrect/max(vtotal,1):.3f}")
-        if val_loss < best_val_loss:
+              f"val_loss={val_loss:.4f} val_acc={val_acc:.3f} "
+              f"val_sif_recall={sif_recall:.3f}")
+        eligible = val_acc >= MIN_VAL_ACC
+        if eligible and (round(sif_recall, 6), round(val_acc, 6)) > \
+                (round(best_sif_recall, 6), round(best_val_acc, 6)):
+            best_sif_recall = sif_recall
+            best_val_acc = val_acc
             best_val_loss = val_loss
             best_epoch = epoch + 1
             best_state = {k: v.detach().cpu().clone()
@@ -212,7 +257,12 @@ def train(args):
         "pool_rows": len(pool),
         "class_distribution": {t: sum(1 for r in pool if r["tier"] == t) for t in TIERS},
         "best_val_loss": round(best_val_loss, 5),
+        "best_val_acc": round(best_val_acc, 4),
+        "best_val_sif_recall": round(best_sif_recall, 4),
+        "val_sif_rows": v_sif_total,
+        "min_val_acc_floor": MIN_VAL_ACC,
         "best_epoch": best_epoch,
+        "balanced_batches": bool(getattr(args, "balanced", True)),
     }
     (out_dir / "train_meta.json").write_text(json.dumps(meta, indent=2), encoding="utf-8")
     print(f"SAVED {out_dir}")
@@ -231,6 +281,9 @@ def main():
     ap.add_argument("--batch-size", type=int, default=16)
     ap.add_argument("--lr", type=float, default=2e-4)
     ap.add_argument("--loss", choices=["weighted_ce", "focal"], default="weighted_ce")
+    ap.add_argument("--balanced", action="store_true", default=True,
+                    help="class-balanced batch sampling (default on); --no-balanced "
+                         "to fall back to plain shuffled batches")
     ap.add_argument("--gamma", type=float, default=2.0)
     ap.add_argument("--seed", type=int, default=SEED)
     ap.add_argument("--device", default="auto")

@@ -1,0 +1,25 @@
+{
+  "version": "v3",
+  "base_model": "distilbert-base-uncased",
+  "from_base": true,
+  "loss": "focal",
+  "epochs": 10,
+  "seed": 42,
+  "device": "cuda",
+  "train_rows": 389,
+  "val_rows": 71,
+  "pool_rows": 460,
+  "class_distribution": {
+    "near_miss": 190,
+    "recordable": 181,
+    "psif": 65,
+    "asif": 24
+  },
+  "best_val_loss": 0.17837,
+  "best_val_acc": 0.7042,
+  "best_val_sif_recall": 0.9286,
+  "val_sif_rows": 14,
+  "min_val_acc_floor": 0.6,
+  "best_epoch": 8,
+  "balanced_batches": true
+}

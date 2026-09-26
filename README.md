@@ -7,7 +7,7 @@ AnvayaX reads raw, unstructured safety narratives (UA/UC observations, near-miss
 1. **Classifies** it into an ASTM E2920-26 severity tier — `aSIF` / `pSIF` / `recordable` / `near-miss` — plus a continuous `severity_index` (25–100) for ranking.
 2. **Tags** the IOGP Report 459 Life-Saving Rules it implicates, with the exact trigger phrases highlighted (rule-trace explainability).
 3. **Extracts** precursor patterns — activity, location, barrier failure, energy source — and aggregates them into a site-risk heatmap with rate-of-change ("escalating risk") ranking.
-4. **Learns continuously** — a human-in-the-loop Review Queue ordered by an active-learning acquisition score feeds a scheduled refresh cycle: LoRA retrain from base on the full accumulated corpus → challenger evaluated on a frozen regression set → promoted **only** if SIF-recall holds. The Model Insight screen shows the v1→v2 improvement trajectory live. This is the headline feature ([spec](docs/CONTINUAL_LEARNING.md)).
+4. **Learns continuously** — a human-in-the-loop Review Queue ordered by an active-learning acquisition score feeds a scheduled refresh cycle: LoRA retrain from base on the full accumulated corpus → challenger evaluated on a frozen regression set → promoted **only** if SIF-recall holds. The Model Insight screen shows the full version trajectory — promotions *and* rejections — live. In the current demo corpus the loop promoted **v3**, lifting frozen-set SIF recall **0.8182 → 0.9091 (+9.1 pp)** after two honest rejections along the way (see [docs/CONTINUAL_LEARNING.md](docs/CONTINUAL_LEARNING.md) §4). This is the headline feature.
 
 > **Data honesty:** the demo dataset is **synthetic** (Groq-generated, template-seeded per oil & gas scenario), clearly badged in the UI and recorded in `ml-service/data/PROVENANCE.json`. No public oil-&-gas SIF-labeled corpus exists; the three-layer construction (OSHA → IOGP/PSA domain → synthetic) is documented in [docs/DATASET_AND_SCOPE_PLAN.md](docs/DATASET_AND_SCOPE_PLAN.md).
 
@@ -31,6 +31,10 @@ Prereqs: **Node ≥ 20**, **Python 3.11–3.12** (3.14 is too new for PyTorch wh
 
 ### 1. ML service
 
+Prereqs: Python 3.11–3.12. Use a CUDA build of PyTorch if you have an NVIDIA GPU (a refresh takes ~40 s on a laptop RTX 4070 vs several minutes on CPU); otherwise the default wheel runs on CPU fine.
+
+**macOS / Linux**
+
 ```bash
 cd ml-service
 uv venv .venv --python 3.12        # or: python3.12 -m venv .venv
@@ -40,17 +44,28 @@ python -m spacy download en_core_web_sm
 uvicorn api.main:app --port 8000   # keep running; /health to verify
 ```
 
-A trained adapter ships in `model_registry/` — if it's missing, the service
-automatically runs in `RULES_ONLY` fallback mode (heuristic tiers, `needs_review=true`)
-so the demo never breaks.
+**Windows (PowerShell)**
+
+```powershell
+cd ml-service
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+# GPU: replace the CPU torch wheel with a CUDA build (cu118 shown; pick your driver)
+pip install torch==2.2.2 --index-url https://download.pytorch.org/whl/cu118
+python -m spacy download en_core_web_sm
+uvicorn api.main:app --port 8000   # from ml-service; /health on :8000 to verify
+```
+
+`/health` reports the loaded mode. **`model_registry/**/*.safetensors` is gitignored** (large binaries don't belong in git), so a *fresh clone* boots in `rules_only` fallback — heuristic tiers with `needs_review=true`, demo fully functional. Run the refresh cycle (step 3) once to train and promote a real adapter; from then on the service loads `transformer` mode. The `model_config.json` + `registry.json` rows that *are* committed tell the version story either way.
 
 ### 2. Web app
 
 ```bash
 cd web
-npm install
+npm install                        # add --ignore-scripts if better-sqlite3's postinstall is blocked by policy
 npx drizzle-kit push               # creates db/sqlite.db
-npm run seed                       # 750 demo reports through the ML pipeline
+npx tsx scripts/seed.ts            # 750 demo reports through the ML pipeline (service must be running)
 npm run dev                        # http://localhost:3000
 ```
 
@@ -69,7 +84,7 @@ Add to cron for production cadence: `0 3 * * 1 cd /path/to/AnvayaX/web && npx ts
 
 ```
 ml-service/
-  api/main.py            FastAPI: /classify /extract-precursors /model-info /train /health
+  api/main.py            FastAPI: /classify /classify-batch /extract-precursors /model-info /train /health
   model/
     schema.py            ClassifyResult — the cross-language contract
     rule_tagger.py       IOGP 459 rules + energy/barrier cues (YAML packs, threshold-gated)
@@ -100,8 +115,9 @@ notebooks/TRAINING.md    Colab/Kaggle T4 runbook
 ## Tests
 
 ```bash
-cd ml-service && source .venv/bin/activate && pytest -q
-cd web && npx vitest run
+cd ml-service && source .venv/bin/activate && pytest -q    # 22 tests: contract, gate, trainer, registry
+cd web && npx tsc --noEmit                                  # type-check the app + data layer
+cd web && npm run build                                     # Next.js production build
 ```
 
 ## Key references

@@ -335,5 +335,106 @@
     "sif_recall": 0.3636,
     "trained_on_rows": 480,
     "note": "refresh 2026-09-23T13:09 pool=480"
+  },
+  {
+    "version": "v3",
+    "registered_at": "2026-09-26T12:25:56.554601+00:00",
+    "gate_result": "promoted",
+    "champion_before": "v1",
+    "metrics": {
+      "n": 52,
+      "accuracy": 0.7885,
+      "macro_f1": 0.7486,
+      "per_class": {
+        "near_miss": {
+          "precision": 1.0,
+          "recall": 0.619,
+          "f1": 0.7647,
+          "support": 21
+        },
+        "recordable": {
+          "precision": 0.9474,
+          "recall": 0.9,
+          "f1": 0.9231,
+          "support": 20
+        },
+        "psif": {
+          "precision": 0.4706,
+          "recall": 1.0,
+          "f1": 0.64,
+          "support": 8
+        },
+        "asif": {
+          "precision": 0.6667,
+          "recall": 0.6667,
+          "f1": 0.6667,
+          "support": 3
+        }
+      },
+      "sif_positive": {
+        "precision": 0.5,
+        "recall": 0.9091,
+        "f2": 0.7812,
+        "average_precision": 0.7343,
+        "positive_support": 11,
+        "recall_prob_mass": 0.9091,
+        "precision_prob_mass": 0.5
+      },
+      "confusion_matrix": [
+        [
+          13,
+          0,
+          7,
+          1
+        ],
+        [
+          0,
+          18,
+          2,
+          0
+        ],
+        [
+          0,
+          0,
+          8,
+          0
+        ],
+        [
+          0,
+          1,
+          0,
+          2
+        ]
+      ],
+      "train_meta": {
+        "version": "v3",
+        "base_model": "distilbert-base-uncased",
+        "from_base": true,
+        "loss": "focal",
+        "epochs": 10,
+        "seed": 42,
+        "device": "cuda",
+        "train_rows": 389,
+        "val_rows": 71,
+        "pool_rows": 460,
+        "class_distribution": {
+          "near_miss": 190,
+          "recordable": 181,
+          "psif": 65,
+          "asif": 24
+        },
+        "best_val_loss": 0.17837,
+        "best_val_acc": 0.7042,
+        "best_val_sif_recall": 0.9286,
+        "val_sif_rows": 14,
+        "min_val_acc_floor": 0.6,
+        "best_epoch": 8,
+        "balanced_batches": true
+      }
+    },
+    "sif_recall": 0.9091,
+    "trained_on_rows": 460,
+    "note": "refresh 2026-09-26T12:25 pool=460",
+    "promoted_at": "2026-09-26T12:25:56.555602+00:00"
   }
 ]

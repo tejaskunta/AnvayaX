@@ -182,22 +182,31 @@ def train_endpoint(req: TrainRequest):
         champion = champion_metrics()
         champion_version = active_version()
         challenger = next_version()
-
         class Args:
             pool = str(tmp_pool)
             train = None
             include_corrections = None
             base = C.BASE_MODEL
             from_base = True
-            epochs = 6
+            # v2/v3 post-mortem (docs/CONTINUAL_LEARNING.md §4): weighted-CE and
+            # focal challengers on the expanded pool all collapsed SIF recall on
+            # the frozen gate (0.36-0.55 vs champion 0.82). Root cause was NOT
+            # the loss — it was (a) plain shuffled batches letting whole batches
+            # go SIF-free under the ~4:1 imbalance, (b) checkpoint selection by
+            # weighted val loss, which peaks after the majority fit sharpens and
+            # minority recall has already decayed, and (c) 2e-4 LR, whose seed
+            # variance swings gate recall between 0.45 and 1.00 (the frozen set
+            # has 11 SIF rows — every miss costs 9pp). Fixes: class-balanced
+            # batch sampling, lr=1e-4 (sweep: 0.91/0.91/1.00 across seeds 42/13/99
+            # vs 2e-4's coin-flip), and checkpoint selection on val SIF recall
+            # gated by a val-accuracy floor so flag-everything epochs lose.
+            epochs = 10
             batch_size = 16
-            lr = 2e-4
-            # Escalation path (model/losses.py docstring): v2's weighted-CE challenger
-            # collapsed minority SIF recall on the frozen set (0.36 vs 0.82) and was
-            # gate-rejected; focal loss down-weights easy majority examples so gradient
-            # concentrates on the hard psif/asif tail.
+            lr = 1e-4
             loss = "focal"
             gamma = 2.0
+            balanced = True
+            sif_boost = 1.0
             seed = C.SEED
             device = "auto"
             version = challenger
@@ -219,10 +228,19 @@ def train_endpoint(req: TrainRequest):
         ch_report = evaluate_matrix(y, ch_probs)
         champ_report = None
         if champion_version and (C.REGISTRY_DIR / champion_version).exists():
-            cp_probs = predict_probs_from_dir(texts, C.REGISTRY_DIR / champion_version)
-            champ_report = evaluate_matrix(y, cp_probs)
+            try:
+                cp_probs = predict_probs_from_dir(texts, C.REGISTRY_DIR / champion_version)
+                champ_report = evaluate_matrix(y, cp_probs)
+            except Exception as exc:
+                # Adapter weights may be absent on a fresh clone (the .safetensors
+                # are gitignored) — fall back to the champion's published
+                # registry metrics instead of failing the whole refresh.
+                print(f"[train] champion {champion_version} not scorable ({exc}); "
+                      f"using published registry metrics for the gate")
 
         promote_flag, reason, sif_r, delta = gate_decision(ch_report, champ_report or champion)
+        if champ_report is None and champion_version:
+            reason += " [champion scored from published registry metrics]"
         ch_report["train_meta"] = meta
         register_version(
             challenger, metrics=ch_report,

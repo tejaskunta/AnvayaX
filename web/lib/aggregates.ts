@@ -5,8 +5,6 @@ import "server-only";
 import fs from "node:fs";
 import path from "node:path";
 
-import { eq } from "drizzle-orm";
-
 import type { DB } from "@/db/client";
 import { modelRegistry, reports, sites } from "@/db/schema";
 
