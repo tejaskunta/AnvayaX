@@ -80,7 +80,14 @@ def main() -> int:
     )
 
     url = f"https://huggingface.co/spaces/{user}/{space}"
-    direct = f"https://{user.replace(' ', '-').lower()}-{space.replace('_', '-')}.hf.space"
+    # HF subdomains are <username>--<space>.hf.space (double dash).
+    direct = (
+        "https://"
+        + user.replace(" ", "-").lower()
+        + "--"
+        + space.replace("_", "-").lower()
+        + ".hf.space"
+    )
     print(f"> Space page : {url}")
     print(f"> API base   : {direct}")
     if args.no_wait:
