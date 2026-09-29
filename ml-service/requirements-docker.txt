@@ -1,0 +1,13 @@
+# Runtime deps for the hosted (CPU inference) image. torch is installed
+# separately from the PyTorch CPU index in the Dockerfile — do not add it here.
+# Pinned to the versions the v3 adapter was trained/validated with.
+fastapi>=0.110
+uvicorn[standard]>=0.29
+pydantic>=2.6
+transformers==4.44.2
+peft==0.11.1
+sentence-transformers==3.0.1
+spacy>=3.7,<3.9
+scikit-learn==1.4.2
+numpy==1.26.4
+pyyaml>=6.0

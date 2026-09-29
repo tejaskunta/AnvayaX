@@ -29,6 +29,9 @@ model_registry/**/*.safetensors
 model_registry/**/*.safetensors.tmp
 ml-service/model_registry/**/*.bin
 ml-service/model_registry/**/*.safetensors
+# The ACTIVE champion (v3) is committed so clones + hosted deploys can
+# reproduce the demo model; older versions stay regenerable history.
+!ml-service/model_registry/v3/adapter_model.safetensors
 *.pt
 *.pth
 

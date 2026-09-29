@@ -1,0 +1,15 @@
+# Keep the build context lean and reproducible. The HF Space upload is already
+# filtered by scripts/deploy_space.py; this matters for local `docker build`.
+.venv/
+__pycache__/
+**/__pycache__/
+.pytest_cache/
+*.pyc
+# v1/v2 history weights — the service loads the active v3 adapter only.
+model_registry/v1/adapter_model.safetensors
+model_registry/v2/adapter_model.safetensors
+# Local scratch / labeling exports not needed at inference.
+labeling/*.csv
+labeling/*.json
+artifacts/
+tests/
