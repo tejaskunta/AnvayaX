@@ -187,6 +187,7 @@ async function main() {
           tierProbs: JSON.stringify(res2.tiers),
           ruleTags: JSON.stringify(res2.rule_tags),
           precursors: JSON.stringify(res2.precursors),
+          barrierFailure: res2.precursors?.barrier_failures?.[0] ?? null,
           embedding: res2.embedding ? Buffer.from(new Float32Array(res2.embedding).buffer) : null,
           needsReview: res2.needs_review ? 1 : 0,
           acquisitionScore: res2.acquisition_score ?? 0,

@@ -73,8 +73,10 @@ export default function Sandbox() {
   return (
     <div>
       <header>
-        <h1 className="font-display text-2xl font-bold tracking-tight">Analyze a report</h1>
-        <p className="mt-1 text-sm text-[var(--dim)]">
+        <h1 className="page-title">
+          Analyze a <em>report</em>
+        </h1>
+        <p className="mt-2 max-w-[62ch] text-[15px] leading-[1.6] text-[var(--dim)]">
           Paste any free-text incident narrative. The champion model scores it live, and the
           result is stored in the feed for audit.
         </p>
@@ -87,7 +89,7 @@ export default function Sandbox() {
               <label htmlFor="report-text" className="label-micro">
                 Incident narrative
               </label>
-              <span className="num text-[11px] text-[var(--faint)]">{words} words</span>
+              <span className="num text-xs text-[var(--faint)]">{words} words</span>
             </div>
             <textarea
               id="report-text"
@@ -123,7 +125,7 @@ export default function Sandbox() {
               <button type="button" className="btn-primary ml-auto" onClick={run} disabled={!canRun}>
                 {busy ? (
                   <>
-                    <span className="dot-live h-1.5 w-1.5 rounded-full bg-[#14100a]" aria-hidden />
+                    <span className="dot-live h-1.5 w-1.5 rounded-full bg-[var(--on-accent)]" aria-hidden />
                     classifying…
                   </>
                 ) : (
@@ -140,7 +142,7 @@ export default function Sandbox() {
             <section className="panel border-[var(--tier-asif)] p-4 text-sm" role="alert">
               <p className="font-semibold text-[var(--tier-asif)]">Analysis failed</p>
               <p className="mt-1 text-[var(--dim)]">{error}</p>
-              <p className="mt-2 text-[11px] text-[var(--faint)]">
+              <p className="mt-2 text-xs text-[var(--faint)]">
                 The ML service must be running (uvicorn api.main:app on :8000). Start it and retry —
                 nothing was persisted.
               </p>
@@ -158,14 +160,14 @@ export default function Sandbox() {
                 </span>
                 {result.result.needs_review && (
                   <span
-                    className="rounded-[2px] px-1.5 py-0.5 text-[10px] font-semibold"
+                    className="rounded-[2px] px-1.5 py-0.5 text-xs font-semibold"
                     style={{ color: "var(--tier-rec)", background: "color-mix(in srgb, var(--tier-rec) 12%, transparent)" }}
                   >
                     queued for review
                   </span>
                 )}
                 <Link href={`/report/${result.report_id}`} className="btn-ghost ml-auto">
-                  open stored report →
+                  Open saved report
                 </Link>
               </div>
 
@@ -194,14 +196,14 @@ export default function Sandbox() {
           {result ? (
             <>
               <section className="panel p-4" aria-label="Tier probabilities">
-                <h2 className="font-display text-sm font-semibold uppercase tracking-wide text-[var(--dim)]">
+                <h2 className="font-display text-sm font-semibold text-[var(--chalk)]">
                   Tier probabilities
                 </h2>
                 <div className="mt-3">
                   <ProbLadder probs={result.result.tiers} />
                 </div>
                 {result.result.acquisition_score !== null && (
-                  <p className="num mt-3 text-[11px] text-[var(--faint)]">
+                  <p className="num mt-3 text-xs text-[var(--faint)]">
                     acquisition score {result.result.acquisition_score.toFixed(3)} — how much a human
                     label on this row would teach the next model
                   </p>
@@ -209,7 +211,7 @@ export default function Sandbox() {
               </section>
               <PrecursorPanel precursors={result.result.precursors} />
               <section className="panel p-4" aria-label="Similar past incidents">
-                <h2 className="font-display text-sm font-semibold uppercase tracking-wide text-[var(--dim)]">
+                <h2 className="font-display text-sm font-semibold text-[var(--chalk)]">
                   Similar past incidents
                 </h2>
                 <ul className="mt-3 space-y-3">
@@ -218,14 +220,14 @@ export default function Sandbox() {
                       <Link href={`/report/${s.id}`} className="group">
                         <div className="flex items-center gap-2">
                           <TierChip tier={s.tier} />
-                          <span className="num text-[10px] text-[var(--faint)]">
+                          <span className="num text-xs text-[var(--faint)]">
                             {(s.similarity * 100).toFixed(0)}% match
                           </span>
                         </div>
                         <p className="mt-1 line-clamp-2 leading-5 text-[var(--dim)] group-hover:text-[var(--chalk)]">
                           {s.excerpt}
                         </p>
-                        <p className="mt-0.5 text-[10px] text-[var(--faint)]">
+                        <p className="mt-0.5 text-xs text-[var(--faint)]">
                           {s.site} · {s.occurred_at ?? "date unknown"}
                         </p>
                       </Link>

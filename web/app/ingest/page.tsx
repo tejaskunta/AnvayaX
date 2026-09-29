@@ -87,11 +87,13 @@ export default function Ingest() {
   return (
     <div>
       <header>
-        <h1 className="font-display text-2xl font-bold tracking-tight">Ingest reports</h1>
-        <p className="mt-1 max-w-xl text-sm text-[var(--dim)]">
+        <h1 className="page-title">
+          Ingest <em>reports</em>
+        </h1>
+        <p className="mt-2 max-w-xl text-[15px] leading-[1.6] text-[var(--dim)]">
           Upload a batch of free-text HSSE reports. Required column:{" "}
-          <code className="num rounded-[2px] bg-[var(--ink-800)] px-1 py-0.5 text-xs">text</code>. Optional:{" "}
-          <code className="num rounded-[2px] bg-[var(--ink-800)] px-1 py-0.5 text-xs">id, site, activity, occurred_at</code>.
+          <code className="num rounded-md bg-[var(--ink-800)] px-1.5 py-0.5 text-xs">text</code>. Optional:{" "}
+          <code className="num rounded-md bg-[var(--ink-800)] px-1.5 py-0.5 text-xs">id, site, activity, occurred_at</code>.
         </p>
       </header>
 
@@ -147,7 +149,7 @@ export default function Ingest() {
 
           {summary && (
             <section className="panel mt-4 p-4" aria-label="Ingest summary">
-              <p className="font-display text-sm font-semibold uppercase tracking-wide text-[var(--tier-nm)]">
+              <p className="font-display text-sm font-semibold text-[var(--tier-nm)]">
                 Ingested {summary.inserted} of {summary.rowCount} rows
               </p>
               <div className="mt-3 grid grid-cols-2 gap-4 sm:grid-cols-4">
@@ -163,7 +165,7 @@ export default function Ingest() {
                   </span>
                 ))}
               </div>
-              <p className="mt-3 text-[11px] text-[var(--faint)]">
+              <p className="mt-3 text-xs text-[var(--faint)]">
                 Batch <span className="num">{summary.batchId}</span> recorded in the audit trail.
               </p>
             </section>
@@ -171,14 +173,14 @@ export default function Ingest() {
         </div>
 
         <aside className="panel p-4" aria-label="Recent batches">
-          <h2 className="font-display text-sm font-semibold uppercase tracking-wide text-[var(--dim)]">
+          <h2 className="font-display text-sm font-semibold text-[var(--chalk)]">
             Recent batches
           </h2>
           <ul className="mt-3 space-y-3">
             {batches.map((b) => (
               <li key={b.id} className="text-xs">
                 <p className="truncate text-[var(--chalk)]">{b.filename ?? b.id}</p>
-                <p className="num mt-0.5 text-[11px] text-[var(--faint)]">
+                <p className="num mt-0.5 text-xs text-[var(--faint)]">
                   {fmtNum(b.insertedCount)} stored · {fmtNum(b.skippedDuplicates)} dupes · {b.source} ·{" "}
                   {new Date(b.createdAt).toLocaleDateString("en-GB", { day: "2-digit", month: "short" })}
                 </p>

@@ -74,14 +74,14 @@ export default function RefreshButton({ running: initialRunning = false }: { run
       <button type="button" className="btn-primary" onClick={start} disabled={busy}>
         {busy ? (
           <>
-            <span className="dot-live h-1.5 w-1.5 rounded-full bg-[#14100a]" aria-hidden />
+            <span className="dot-live h-1.5 w-1.5 rounded-full bg-[var(--on-accent)]" aria-hidden />
             refresh running
           </>
         ) : (
           "Run refresh now"
         )}
       </button>
-      <p className="mt-1.5 max-w-60 text-[10px] leading-4 text-[var(--faint)]">
+      <p className="mt-1.5 max-w-60 text-xs leading-4 text-[var(--faint)]">
         {error ? (
           <span className="text-[var(--tier-asif)]">{error}</span>
         ) : msg ? (

@@ -20,6 +20,7 @@ export const reports = sqliteTable("reports", {
   embedding: blob("embedding"), // Float32Array bytes, 384 dims
   site: text("site").notNull(),
   activity: text("activity"),
+  barrierFailure: text("barrier_failure"), // first barrier from precursors at classify time
   occurredAt: text("occurred_at"), // ISO date
   sourceLayer: text("source_layer").notNull(), // l2_domain | l3_synthetic | manual
   isSynthetic: integer("is_synthetic").notNull().default(0),

@@ -2,18 +2,36 @@
  * (demo path for the scheduled job; see docs/cron.md for the cron variant).
  * Spawns scripts/refresh.ts which: assembles the gold pool, trains a LoRA
  * challenger, runs the frozen-gate champion/challenger comparison, and on
- * promotion re-classifies the corpus + mirrors the registry. */
+ * promotion re-classifies the corpus + mirrors the registry.
+ *
+ * Serverless (Vercel) note: spawning a minutes-long child process is
+ * impossible in a request handler — the instance is frozen/killed the moment
+ * the response returns and there is no local model/DB to train against. On
+ * Vercel this endpoint answers 501 and points at the local/cron path instead. */
 import { spawn } from "node:child_process";
 import path from "node:path";
 
 import { NextResponse } from "next/server";
 
 export const runtime = "nodejs";
-export const maxDuration = 3600; // LoRA refresh takes minutes
+// LoRA refresh itself is disabled on Vercel (below); locally maxDuration is
+// ignored. 60s is the ceiling that keeps a Hobby-plan deploy from failing.
+export const maxDuration = 60;
 
 let running: Promise<void> | null = null;
 
 export async function POST() {
+  if (process.env.VERCEL === "1") {
+    return NextResponse.json(
+      {
+        ok: false,
+        error:
+          "Continual-learning refresh runs on the local worker, not in the hosted demo. " +
+          "Run `cd web && npx tsx scripts/refresh.ts` (or the cron in docs/cron.md) against the same DB.",
+      },
+      { status: 501 }
+    );
+  }
   if (running) {
     return NextResponse.json({ ok: false, error: "A refresh is already running." }, { status: 409 });
   }

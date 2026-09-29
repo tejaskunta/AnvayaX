@@ -46,11 +46,11 @@ export default async function ReportDetail({ params }: { params: { id: string } 
         </span>
         {row.needsReview === 1 && !correction && (
           <Link href="/queue" className="btn-ghost">
-            in review queue →
+            Review in queue
           </Link>
         )}
         {correction && (
-          <span className="rounded-[2px] border border-[var(--tier-nm)] px-2 py-0.5 text-[11px]" style={{ color: "var(--tier-nm)" }}>
+          <span className="rounded-[2px] border border-[var(--tier-nm)] px-2 py-0.5 text-xs" style={{ color: "var(--tier-nm)" }}>
             {correction.action === "accept" ? "reviewer accepted" : `reviewer corrected → ${TIER_LABEL[correction.correctedTag]}`}
             {correction.releasedToPool === 1 ? " · released to pool" : ""}
           </span>
@@ -65,13 +65,13 @@ export default async function ReportDetail({ params }: { params: { id: string } 
               {SOURCE_LABEL[row.sourceLayer] ?? row.sourceLayer}
               {row.isSynthetic ? " · synthetic" : ""}
             </p>
-            <div className="mt-3">
+            <div className="mt-3 max-w-[50ch]">
               <RuleTrace text={row.rawText} tags={tags} />
             </div>
           </section>
 
           <section className="panel p-5" aria-label="Rule tags">
-            <h2 className="font-display text-sm font-semibold uppercase tracking-wide text-[var(--dim)]">
+            <h2 className="font-display text-sm font-semibold text-[var(--chalk)]">
               IOGP 459 rule trace
             </h2>
             {tags.length ? (
@@ -88,11 +88,11 @@ export default async function ReportDetail({ params }: { params: { id: string } 
                 ))}
               </ul>
             ) : (
-              <p className="mt-3 text-sm text-[var(--faint)]">
+              <p className="mt-3 max-w-[60ch] text-sm text-[var(--faint)]">
                 No rule packs fired above the tag threshold — the transformer verdict stands on its own here.
               </p>
             )}
-            <p className="mt-3 text-[11px] text-[var(--faint)]">
+            <p className="mt-3 max-w-[60ch] text-xs text-[var(--faint)]">
               Hover a tag to see the trigger phrases; they are highlighted in the text above.
             </p>
           </section>
@@ -100,7 +100,7 @@ export default async function ReportDetail({ params }: { params: { id: string } 
 
         <aside className="space-y-6">
           <section className="panel p-4" aria-label="Tier probabilities">
-            <h2 className="font-display text-sm font-semibold uppercase tracking-wide text-[var(--dim)]">
+            <h2 className="font-display text-sm font-semibold text-[var(--chalk)]">
               Tier probabilities
             </h2>
             <div className="mt-3">

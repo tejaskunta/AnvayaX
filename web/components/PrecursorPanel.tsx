@@ -12,7 +12,7 @@ export default function PrecursorPanel({ precursors }: { precursors: Partial<Pre
   const any = GROUPS.some((g) => (precursors?.[g.key] ?? []).length > 0);
   return (
     <section className="panel p-4" aria-label="SIF precursors">
-      <h2 className="font-display text-sm font-semibold uppercase tracking-wide text-[var(--dim)]">
+      <h2 className="font-display text-sm font-semibold text-[var(--chalk)]">
         SIF precursors
       </h2>
       {any ? (
@@ -22,14 +22,14 @@ export default function PrecursorPanel({ precursors }: { precursors: Partial<Pre
             if (!items.length) return null;
             return (
               <div key={g.key}>
-                <dt className="text-[10px] uppercase tracking-wide" style={{ color: g.color }}>
+                <dt className="text-xs uppercase tracking-wide" style={{ color: g.color }}>
                   {g.label}
                 </dt>
                 <dd className="mt-1 flex flex-wrap gap-1.5">
                   {items.map((v) => (
                     <span
                       key={v}
-                      className="rounded-[2px] border px-1.5 py-0.5 text-[11px] text-[var(--chalk)]"
+                      className="rounded-[2px] border px-1.5 py-0.5 text-xs text-[var(--chalk)]"
                       style={{ borderColor: `color-mix(in srgb, ${g.color} 40%, transparent)` }}
                     >
                       {v}

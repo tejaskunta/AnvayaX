@@ -107,8 +107,10 @@ export default async function ModelInsight() {
     <div>
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="font-display text-2xl font-bold tracking-tight">Model insight</h1>
-          <p className="mt-1 max-w-xl text-sm text-[var(--dim)]">
+          <h1 className="page-title">
+            Model <em>insight</em>
+          </h1>
+          <p className="mt-2 max-w-xl text-[15px] leading-[1.6] text-[var(--dim)]">
             Every version the loop has produced, the frozen gate that keeps it honest, and the
             provenance of the data it learned from.
           </p>
@@ -138,7 +140,7 @@ export default async function ModelInsight() {
           )}
         </div>
         {metrics?.threshold_sweep && (
-          <p className="mt-3 text-[11px] leading-4 text-[var(--faint)]">
+          <p className="mt-3 text-xs leading-4 text-[var(--faint)]">
             Review threshold {service?.review_threshold?.toFixed(2) ?? "0.55"}: a report whose top tier is below
             {" "}confidence {service?.review_threshold?.toFixed(2) ?? "0.55"} — or whose SIF-mass probability is near the
             decision boundary — is routed to the review queue. Sweep:{" "}
@@ -153,38 +155,38 @@ export default async function ModelInsight() {
 
       <div className="mt-6 grid gap-6 xl:grid-cols-2">
         {/* Trajectory */}
-        <section className="panel p-5" aria-label="Model registry trajectory">
-          <h2 className="font-display text-sm font-semibold uppercase tracking-wide text-[var(--dim)]">
+        <section className="panel min-w-0 p-5" aria-label="Model registry trajectory">
+          <h2 className="font-display text-sm font-semibold text-[var(--chalk)]">
             The loop, versioned
           </h2>
           <p className="mt-1 text-xs text-[var(--faint)]">
-            SIF-potential recall on the frozen 52-row regression set. Each refresh trains a LoRA
-            challenger on the gold pool; the gate promotes it only if recall doesn&apos;t regress by
-            more than {gateTol}pp.
+            SIF-potential recall on the frozen 52-row regression set. The line connects promoted
+            champions only; a ✕ is a challenger the gate rejected — recall regressed past the{" "}
+            {gateTol}pp floor, so it never became the model.
           </p>
-          <Trajectory rows={registry} />
+          <Trajectory rows={registry} gateTol={gateTol} />
           <ul className="mt-4 space-y-2">
             {registry.map((r) => (
-              <li key={r.version} className="text-xs">
-                <div className="flex items-center gap-2">
+              <li key={r.version} className="min-w-0 text-xs">
+                <div className="flex flex-wrap items-center gap-2">
                   <span className="num font-semibold text-[var(--chalk)]">{r.version}</span>
                   <GateBadge result={r.gateResult} />
                   {r.promotedAt && (
-                    <span className="text-[10px] text-[var(--caution)]">promoted</span>
+                    <span className="text-xs text-[var(--caution)]">promoted</span>
                   )}
-                  <span className="num ml-auto text-[10px] text-[var(--faint)]">
+                  <span className="num ml-auto text-xs text-[var(--faint)]">
                     {r.sifRecall !== null ? `recall ${fmtPct(r.sifRecall, 1)}` : "—"} · {fmtNum(r.trainedOnRows ?? 0)} rows
                   </span>
                 </div>
-                {r.note && <p className="mt-0.5 text-[11px] leading-4 text-[var(--faint)]">{r.note}</p>}
+                {r.note && <p className="mt-0.5 text-xs leading-4 text-[var(--faint)]">{r.note}</p>}
               </li>
             ))}
           </ul>
         </section>
 
         {/* Per-class + confusion */}
-        <section className="panel p-5" aria-label="Per-class metrics">
-          <h2 className="font-display text-sm font-semibold uppercase tracking-wide text-[var(--dim)]">
+        <section className="panel min-w-0 p-5" aria-label="Per-class metrics">
+          <h2 className="font-display text-sm font-semibold text-[var(--chalk)]">
             Where the model errs
           </h2>
           <p className="mt-1 text-xs text-[var(--faint)]">
@@ -192,9 +194,10 @@ export default async function ModelInsight() {
             (psif + asif) is the headline the gate protects.
           </p>
           {metrics && (
-            <table className="mt-4 w-full text-xs">
+            <div className="mt-4 overflow-x-auto">
+            <table className="w-full text-xs">
               <thead>
-                <tr className="border-b border-[var(--line)] text-left text-[10px] uppercase tracking-wide text-[var(--faint)]">
+                <tr className="border-b border-[var(--line)] text-left text-xs uppercase tracking-wide text-[var(--faint)]">
                   <th className="pb-2">Tier</th>
                   <th className="pb-2 text-right">P</th>
                   <th className="pb-2 text-right">R</th>
@@ -229,9 +232,10 @@ export default async function ModelInsight() {
                 </tr>
               </tbody>
             </table>
+            </div>
           )}
           {metrics?.per_class && (
-            <p className="mt-4 rounded-[3px] border border-[var(--line)] bg-[var(--ink-850)] p-3 text-[11px] leading-5 text-[var(--dim)]">
+            <p className="mt-4 border-t border-[var(--line)] pt-3 text-xs leading-5 text-[var(--dim)]">
               <span className="font-semibold text-[var(--chalk)]">Honest read:</span> asif is rare
               ({metrics.per_class["asif"]?.support ?? 0} rows in the frozen set) and its precision is
               low — the model over-flags catastrophic labels rather than missing them, which is the
@@ -242,8 +246,8 @@ export default async function ModelInsight() {
         </section>
 
         {/* Loop state */}
-        <section className="panel p-5" aria-label="Loop state">
-          <h2 className="font-display text-sm font-semibold uppercase tracking-wide text-[var(--dim)]">
+        <section className="panel min-w-0 p-5" aria-label="Loop state">
+          <h2 className="font-display text-sm font-semibold text-[var(--chalk)]">
             Loop state
           </h2>
           <div className="mt-4 grid grid-cols-2 gap-x-6 gap-y-4">
@@ -259,7 +263,7 @@ export default async function ModelInsight() {
             <Stat label="Released to training pool" value={fmtNum(corr.released)} sub="corrections the next refresh will see" />
             <Stat label="Refresh cadence" value={`every ${intervalDays} days`} sub="cron + manual trigger" />
           </div>
-          <p className="mt-4 text-[11px] leading-5 text-[var(--faint)]">
+          <p className="mt-4 text-xs leading-5 text-[var(--faint)]">
             The refresh trains <em className="not-italic text-[var(--dim)]">replay-from-base</em>: the
             LoRA adapter is re-trained from the frozen DistilBERT base on the full gold pool
             (synthetic corpus + released human corrections), never incrementally on top of the old
@@ -268,8 +272,8 @@ export default async function ModelInsight() {
         </section>
 
         {/* Provenance + reliability */}
-        <section className="panel p-5" aria-label="Data provenance">
-          <h2 className="font-display text-sm font-semibold uppercase tracking-wide text-[var(--dim)]">
+        <section className="panel min-w-0 p-5" aria-label="Data provenance">
+          <h2 className="font-display text-sm font-semibold text-[var(--chalk)]">
             Training-data provenance
           </h2>
           {prov && (
@@ -283,11 +287,11 @@ export default async function ModelInsight() {
               </p>
               <div className="flex flex-wrap gap-2">
                 {TIER_ORDER.map((t) => (
-                  <span key={t} className="num rounded-[2px] border border-[var(--line-strong)] bg-[var(--ink-850)] px-2 py-0.5 text-[11px]">
+                  <span key={t} className="num rounded-[2px] border border-[var(--line-strong)] bg-[var(--ink-850)] px-2 py-0.5 text-xs">
                     {TIER_LABEL[t]} × {prov.counts[t] ?? 0}
                   </span>
                 ))}
-                <span className="rounded-[2px] border border-[var(--line-strong)] px-2 py-0.5 text-[11px]" style={{ color: "var(--tier-psif)" }}>
+                <span className="rounded-[2px] border border-[var(--line-strong)] px-2 py-0.5 text-xs" style={{ color: "var(--tier-psif)" }}>
                   SIF-potential share {fmtPct(prov.sif_potential_share, 1)}
                 </span>
               </div>
@@ -305,7 +309,7 @@ export default async function ModelInsight() {
                   {fmtPct(kappa.observed_agreement, 1)} observed
                 </span>
               </div>
-              <p className="mt-2 text-[11px] leading-4 text-[var(--faint)]">
+              <p className="mt-2 text-xs leading-4 text-[var(--faint)]">
                 Cohen&apos;s κ between the two independent annotator passes on a stratified{" "}
                 n={kappa.n} sample. The {kappa.disagreements} disagreements were excluded from the
                 training gold — the model is only ever trained on rows humans and the second-pass
@@ -340,7 +344,7 @@ function Stat({ label, value, sub, color }: { label: string; value: string; sub?
       <p className="num mt-0.5 text-lg font-semibold" style={color ? { color } : undefined}>
         {value}
       </p>
-      {sub && <p className="mt-0.5 text-[10px] leading-4 text-[var(--faint)]">{sub}</p>}
+      {sub && <p className="mt-0.5 text-xs leading-4 text-[var(--faint)]">{sub}</p>}
     </div>
   );
 }
@@ -357,7 +361,7 @@ function GateBadge({ result }: { result: string }) {
   const m = map[result] ?? { c: "var(--dim)", t: result };
   return (
     <span
-      className="rounded-[2px] px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide"
+      className="rounded-[2px] px-1.5 py-0.5 text-xs font-semibold uppercase tracking-wide"
       style={{ color: m.c, background: `color-mix(in srgb, ${m.c} 12%, transparent)` }}
     >
       {m.t}
@@ -365,53 +369,143 @@ function GateBadge({ result }: { result: string }) {
   );
 }
 
-/** SVG line chart: registry versions in chronological order, recall %. */
-function Trajectory({ rows }: { rows: RegistryRow[] }) {
+/** SVG line chart: registry versions in chronological order, recall %.
+ *  The line connects promoted champions only — a rejected challenger is drawn
+ *  as a separate ✕ marker with the gate floor (champion − tol pp) it fell
+ *  short of, so a rejection never reads as "the model dipped and recovered".
+ *  Y-axis is fixed 0–100% so no value can ever clip; x uses a band scale so
+ *  edge points sit clear of the axes. */
+function Trajectory({ rows, gateTol }: { rows: RegistryRow[]; gateTol: number }) {
   const chrono = [...rows].reverse(); // registeredAt desc → chronological
+  const byVersion = new Map(chrono.map((r) => [r.version, r]));
   const pts = chrono
-    .map((r, i) => ({ x: i, v: r.sifRecall, label: r.version, promoted: r.promotedAt !== null }))
-    .filter((p) => p.v !== null) as { x: number; v: number; label: string; promoted: boolean }[];
+    .map((r, i) => ({
+      x: i,
+      v: r.sifRecall,
+      label: r.version,
+      promoted: r.promotedAt !== null,
+      champ: r.championBefore ? byVersion.get(r.championBefore)?.sifRecall ?? null : null,
+    }))
+    .filter((p) => p.v !== null) as { x: number; v: number; label: string; promoted: boolean; champ: number | null }[];
   if (!pts.length) return <p className="mt-4 text-sm text-[var(--faint)]">No registry data yet.</p>;
 
   const W = 480;
-  const H = 160;
-  const PAD = { l: 44, r: 16, t: 12, b: 28 };
-  const xs = (i: number) => PAD.l + (i * (W - PAD.l - PAD.r)) / Math.max(pts.length - 1, 1);
-  const yMin = 0.5;
-  const ys = (v: number) => PAD.t + (1 - (v - yMin) / (1 - yMin)) * (H - PAD.t - PAD.b);
+  const H = 176;
+  const PAD = { l: 44, r: 16, t: 16, b: 34 };
+  const innerW = W - PAD.l - PAD.r;
+  const innerH = H - PAD.t - PAD.b;
+  // Band scale: the first and last point sit half a band away from the axes,
+  // so dots and their value labels never collide with the y-axis ticks.
+  const xs = (i: number) => PAD.l + (innerW * (i + 0.5)) / pts.length;
+  // Fixed 0–100% domain: every recall value fits by construction.
+  const ys = (v: number) => PAD.t + (1 - Math.min(Math.max(v, 0), 1)) * innerH;
 
-  const path = pts.map((p, i) => `${i === 0 ? "M" : "L"}${xs(p.x).toFixed(1)},${ys(p.v).toFixed(1)}`).join(" ");
-  const area = `${path} L${xs(pts[pts.length - 1].x).toFixed(1)},${ys(yMin)} L${xs(pts[0].x).toFixed(1)},${ys(yMin)} Z`;
+  const promoted = pts.filter((p) => p.promoted);
+  const rejected = pts.filter((p) => !p.promoted);
+  const line = promoted.map((p, i) => `${i === 0 ? "M" : "L"}${xs(p.x).toFixed(1)},${ys(p.v).toFixed(1)}`).join(" ");
+  const area =
+    promoted.length > 1
+      ? `${line} L${xs(promoted[promoted.length - 1].x).toFixed(1)},${ys(0)} L${xs(promoted[0].x).toFixed(1)},${ys(0)} Z`
+      : "";
+
+  // Gate floor = the champion each rejected challenger had to beat, minus the
+  // tolerance. One line is enough for the story; if floors ever differ we show
+  // the highest (strictest) one.
+  const floors = rejected
+    .map((p) => (p.champ !== null ? Math.max(0, p.champ - gateTol / 100) : null))
+    .filter((f): f is number => f !== null);
+  const floor = floors.length ? Math.max(...floors) : null;
+
+  const aria = [
+    "SIF recall by model version.",
+    promoted.length ? `Promoted: ${promoted.map((p) => `${p.label} ${fmtPct(p.v, 1)}`).join(", ")}.` : "",
+    rejected.length ? `Rejected challengers: ${rejected.map((p) => `${p.label} ${fmtPct(p.v, 1)}`).join(", ")}.` : "",
+    floor !== null ? `Gate floor ${fmtPct(floor, 1)}.` : "",
+  ].join(" ");
 
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} className="mt-4 w-full" role="img" aria-label="SIF recall by model version">
-      <defs>
-        <linearGradient id="traj" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="var(--tier-psif)" stopOpacity="0.25" />
-          <stop offset="100%" stopColor="var(--tier-psif)" stopOpacity="0" />
-        </linearGradient>
-      </defs>
-      {[0.6, 0.7, 0.8, 0.9, 1.0].map((g) => (
-        <g key={g}>
-          <line x1={PAD.l} x2={W - PAD.r} y1={ys(g)} y2={ys(g)} stroke="var(--line)" strokeWidth="1" />
-          <text x={PAD.l - 6} y={ys(g) + 3} textAnchor="end" fontSize="9" fill="var(--faint)" className="num">
-            {Math.round(g * 100)}%
-          </text>
-        </g>
-      ))}
-      <path d={area} fill="url(#traj)" />
-      <path d={path} fill="none" stroke="var(--tier-psif)" strokeWidth="2" />
-      {pts.map((p) => (
-        <g key={p.label}>
-          <circle cx={xs(p.x)} cy={ys(p.v)} r={p.promoted ? 5 : 4} fill={p.promoted ? "var(--tier-nm)" : "var(--tier-asif)"} stroke="var(--ink-900)" strokeWidth="2" />
-          <text x={xs(p.x)} y={H - 8} textAnchor="middle" fontSize="10" fill="var(--dim)" className="num">
-            {p.label}
-          </text>
-          <text x={xs(p.x)} y={ys(p.v) - 10} textAnchor="middle" fontSize="10" fill="var(--chalk)" className="num">
-            {fmtPct(p.v, 1)}
-          </text>
-        </g>
-      ))}
-    </svg>
+    <>
+      <svg viewBox={`0 0 ${W} ${H}`} className="mt-4 w-full" role="img" aria-label={aria}>
+        <defs>
+          <linearGradient id="traj" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="var(--tier-psif)" stopOpacity="0.25" />
+            <stop offset="100%" stopColor="var(--tier-psif)" stopOpacity="0" />
+          </linearGradient>
+        </defs>
+        {[0, 0.25, 0.5, 0.75, 1].map((g) => (
+          <g key={g}>
+            <line x1={PAD.l} x2={W - PAD.r} y1={ys(g)} y2={ys(g)} stroke="var(--line)" strokeWidth="1" />
+            <text x={PAD.l - 6} y={ys(g) + 3} textAnchor="end" fontSize="9" fill="var(--faint)" className="num">
+              {Math.round(g * 100)}%
+            </text>
+          </g>
+        ))}
+        {floor !== null && (
+          <g>
+            <line
+              x1={PAD.l}
+              x2={W - PAD.r}
+              y1={ys(floor)}
+              y2={ys(floor)}
+              stroke="var(--tier-asif)"
+              strokeWidth="1.25"
+              strokeDasharray="4 3"
+              opacity="0.75"
+            />
+            <text x={W - PAD.r} y={ys(floor) + 11} textAnchor="end" fontSize="9" fill="var(--tier-asif)" className="num">
+              gate floor {fmtPct(floor, 1)}
+            </text>
+          </g>
+        )}
+        {area && <path d={area} fill="url(#traj)" />}
+        {line && <path d={line} fill="none" stroke="var(--tier-psif)" strokeWidth="2" />}
+        {pts.map((p) => {
+          const cx = xs(p.x);
+          const cy = ys(p.v);
+          // Value label above the dot, flipping below near the top edge so it
+          // can never run off the plot; version labels live under the axis.
+          // A flipped-below label must not land on the gate-floor line.
+          let labelY = cy > PAD.t + 12 ? cy - 10 : cy + 16;
+          if (labelY === cy + 16 && floor !== null && Math.abs(labelY - ys(floor)) < 10) labelY = cy - 10;
+          return (
+            <g key={p.label}>
+              {p.promoted ? (
+                <circle cx={cx} cy={cy} r={5} fill="var(--tier-nm)" stroke="var(--ink-900)" strokeWidth="2" />
+              ) : (
+                <g stroke="var(--tier-asif)" strokeWidth="2.25" strokeLinecap="round">
+                  <line x1={cx - 5} y1={cy - 5} x2={cx + 5} y2={cy + 5} />
+                  <line x1={cx - 5} y1={cy + 5} x2={cx + 5} y2={cy - 5} />
+                </g>
+              )}
+              <text x={cx} y={H - 10} textAnchor="middle" fontSize="10" fill={p.promoted ? "var(--dim)" : "var(--tier-asif)"} className="num">
+                {p.label}
+              </text>
+              <text
+                x={cx}
+                y={labelY}
+                textAnchor="middle"
+                fontSize="10"
+                fontWeight={p.promoted ? undefined : 600}
+                fill={p.promoted ? "var(--chalk)" : "var(--tier-asif)"}
+                className="num"
+              >
+                {fmtPct(p.v, 1)}
+              </text>
+            </g>
+          );
+        })}
+      </svg>
+      <ul className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-[var(--faint)]" aria-hidden>
+        <li className="flex items-center gap-1.5">
+          <span className="h-2 w-2 rounded-full" style={{ background: "var(--tier-nm)" }} /> promoted champion
+        </li>
+        <li className="flex items-center gap-1.5">
+          <span style={{ color: "var(--tier-asif)" }}>✕</span> rejected challenger
+        </li>
+        <li className="flex items-center gap-1.5">
+          <span className="inline-block w-4 border-t-2 border-dashed" style={{ borderColor: "var(--tier-asif)" }} /> gate floor (−{gateTol}pp)
+        </li>
+      </ul>
+    </>
   );
 }

@@ -10,7 +10,10 @@ import { getDb } from "@/db/client";
 import { ingestRows, type IngestRowInput } from "@/lib/ingest";
 
 export const runtime = "nodejs";
-export const maxDuration = 600; // 750-row CPU batch
+// 750-row CPU batch can exceed the hosted limit; locally maxDuration is
+// ignored, and 60s keeps Vercel Hobby deploys valid (over-cap values fail
+// the build). Large uploads should go through the local worker instead.
+export const maxDuration = 60;
 
 type RawRow = Record<string, string | number | undefined>;
 

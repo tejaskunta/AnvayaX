@@ -59,7 +59,7 @@ export default async function SiteDrilldown({ params }: { params: { name: string
     .map(([activity, v]) => ({ activity, ...v, density: (v.sif / v.total) * 100 }))
     .sort((a, b) => b.sif - a.sif || b.total - a.total)
     .slice(0, 8);
-  const worst = [...rs].sort((a, b) => b.severityIndex - a.severityIndex).slice(0, 10);
+  const worst = [...rs].sort((a, b) => b.severityIndex - a.severityIndex).slice(0, 6);
 
   const trend =
     site.trend === "rising"
@@ -80,8 +80,8 @@ export default async function SiteDrilldown({ params }: { params: { name: string
 
       <header className="mt-2 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="font-display text-2xl font-bold tracking-tight">{site.name}</h1>
-          <p className="mt-1 text-sm text-[var(--dim)]">
+          <h1 className="page-title">{site.name}</h1>
+          <p className="mt-2 text-sm text-[var(--dim)]">
             {site.region} · {fmtNum(site.totalReports)} reports · {fmtNum(site.sifPositive)} SIF-potential
           </p>
         </div>
@@ -101,15 +101,15 @@ export default async function SiteDrilldown({ params }: { params: { name: string
       </header>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-[2fr_1fr]">
-        <section className="panel p-4" aria-label="Monthly trend">
-          <h2 className="font-display text-sm font-semibold uppercase tracking-wide text-[var(--dim)]">
+        <section className="panel min-w-0 p-4" aria-label="Monthly trend">
+          <h2 className="font-display text-sm font-semibold text-[var(--chalk)]">
             Monthly SIF-potential density
           </h2>
           <MonthlyTrend data={monthly} />
         </section>
 
-        <section className="panel p-4" aria-label="Tier mix">
-          <h2 className="font-display text-sm font-semibold uppercase tracking-wide text-[var(--dim)]">
+        <section className="panel min-w-0 p-4" aria-label="Tier mix">
+          <h2 className="font-display text-sm font-semibold text-[var(--chalk)]">
             Tier mix
           </h2>
           <ul className="mt-3 space-y-2">
@@ -137,7 +137,7 @@ export default async function SiteDrilldown({ params }: { params: { name: string
               );
             })}
           </ul>
-          <p className="mt-3 text-[11px] leading-4 text-[var(--faint)]">
+          <p className="mt-3 text-xs leading-4 text-[var(--faint)]">
             {TIER_LABEL.psif} + {TIER_LABEL.asif} = {site.sifPositive} of {site.totalReports} (
             {site.density.toFixed(1)} per 100).
           </p>
@@ -145,8 +145,8 @@ export default async function SiteDrilldown({ params }: { params: { name: string
       </div>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_2fr]">
-        <section className="panel p-4" aria-label="Activities by SIF count">
-          <h2 className="font-display text-sm font-semibold uppercase tracking-wide text-[var(--dim)]">
+        <section className="panel min-w-0 p-4" aria-label="Activities by SIF count">
+          <h2 className="font-display text-sm font-semibold text-[var(--chalk)]">
             Activities driving risk
           </h2>
           <ul className="mt-3 space-y-2.5">
@@ -170,18 +170,18 @@ export default async function SiteDrilldown({ params }: { params: { name: string
           </ul>
         </section>
 
-        <section aria-label="Highest severity reports">
+        <section aria-label="Highest severity reports" className="min-w-0">
           <div className="flex items-center justify-between">
-            <h2 className="font-display text-sm font-semibold uppercase tracking-wide text-[var(--dim)]">
+            <h2 className="font-display text-sm font-semibold text-[var(--chalk)]">
               Highest severity at this site
             </h2>
             <Link href={`/feed?site=${encodeURIComponent(site.name)}`} className="btn-ghost">
-              all reports →
+              All site reports
             </Link>
           </div>
-          <ul className="mt-3 space-y-px overflow-hidden rounded-[3px] border border-[var(--line)]">
+          <ul className="panel mt-3 space-y-px overflow-hidden">
             {worst.map((r) => (
-              <li key={r.id} className="bg-[var(--ink-900)] px-4 py-3">
+              <li key={r.id} className="px-4 py-3">
                 <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
                   <TierChip tier={r.tier} />
                   <span className="num text-xs text-[var(--faint)]">{r.id}</span>
@@ -189,11 +189,11 @@ export default async function SiteDrilldown({ params }: { params: { name: string
                     <SeverityBar value={r.severityIndex} tier={r.tier} width={72} />
                   </span>
                 </div>
-                <p className="mt-1.5 line-clamp-2 text-[13px] leading-5 text-[var(--dim)]">
+                <p className="mt-1.5 line-clamp-2 max-w-[58ch] text-[13px] leading-5 text-[var(--dim)]">
                   {r.rawText.slice(0, 220)}
                   {r.rawText.length > 220 ? "…" : ""}
                 </p>
-                <p className="mt-1 text-[11px] text-[var(--faint)]">
+                <p className="mt-1 text-xs text-[var(--faint)]">
                   {r.occurredAt ?? "date unknown"}
                   {r.activity ? ` · ${r.activity}` : ""} · confidence {(r.confidence * 100).toFixed(0)}%
                   {r.needsReview ? " · in review queue" : ""}

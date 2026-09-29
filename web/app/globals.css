@@ -2,24 +2,62 @@
 @tailwind components;
 @tailwind utilities;
 
-/* AnvayaX — control-room palette. The tier ladder is the domain's own
- * hazard-signage language; everything else stays steel-quiet. */
+/* AnvayaX — day-shift control palette. Built for an HSSE supervisor on a
+ * bright morning: light industrial surfaces, white work panels, a dark
+ * petroleum-blue navigation rail (the enterprise pattern: quiet chrome,
+ * loud content). The tier ladder is the domain's own hazard-signage
+ * language, tuned for contrast on paper. Variable names are historical
+ * ("ink"/"chalk"); the semantic map below is the source of truth. */
 :root {
-  --ink-950: #0b0e11;
-  --ink-900: #10151a;
-  --ink-850: #141b21;
-  --ink-800: #1b242c;
-  --line: #26313b;
-  --line-strong: #33424e;
-  --chalk: #e6ebef;
-  --dim: #93a4b1;
-  --faint: #5f7180;
+  --ink-950: #eef1f4; /* page ground — cool paper */
+  --ink-900: #ffffff; /* panel / card surface */
+  --ink-850: #f2f5f8; /* row hover */
+  --ink-800: #e3e8ee; /* sunken track, chip fill, active row */
+  --line: #d6dce4; /* hairline borders */
+  --line-strong: #b9c4d0; /* control borders */
+  --chalk: #17222e; /* primary text — petrol ink */
+  --dim: #44576b; /* secondary text */
+  --faint: #5b6f84; /* tertiary text, labels — AA on paper ground */
 
-  --tier-nm: #57a0a4;
-  --tier-rec: #cba32f;
-  --tier-psif: #e07a3f;
-  --tier-asif: #d24a45;
-  --caution: #f2b705;
+  --brand: #0e3a5d; /* Oil India-lineage petroleum blue */
+  --brand-strong: #0a2c47;
+  --on-brand: #f4f7fa;
+
+  --accent: #e0912b; /* AnvayaX brand orange — logo accent, active states */
+  --accent-strong: #c17a1c;
+  --on-accent: #2a1a05; /* dark ink for text/dots on brand orange */
+
+  /* Risk-bar scale (heatmap): amber → red → dark red by density band */
+  /* Risk-bar scale (HSSE spec): 30–45 terracotta · 45–55 red · 55+ dark red */
+  --risk-amber: #c2703f;
+  --risk-red: #c23a2b;
+  --risk-dark: #7a1f17;
+  --risk-amber-ink: #9a5529; /* text-safe amber for density figures on white */
+
+  --tier-nm: #0f766e; /* near miss — signal teal */
+  --tier-rec: #a16207; /* recordable — safety yellow (dark) */
+  --tier-psif: #c2410c; /* SIF-potential — orange */
+  --tier-asif: #b91c1c; /* actual SIF — hazard red */
+  --caution: #b45309; /* amber status accent */
+}
+
+/* The navigation rail inverts the palette without touching any component:
+ * Shell's aside carries .app-nav and every var() inside re-resolves. */
+.app-nav {
+  --ink-950: #0b1826;
+  --ink-900: #0d1f31;
+  --ink-850: #14293d;
+  --ink-800: #1b3349;
+  --line: #223b52;
+  --line-strong: #2f4d68;
+  --chalk: #eaf1f8;
+  --dim: #a9bfd4;
+  --faint: #8ba6bf; /* AA on --ink-850 rail background */
+  --caution: #f0a92e;
+  --tier-nm: #4fb3a9;
+  --tier-rec: #d8a93a;
+  --tier-psif: #e78a4e;
+  --tier-asif: #e0736c;
 }
 
 html,
@@ -30,12 +68,13 @@ body {
 body {
   background: var(--ink-950);
   color: var(--chalk);
-  font-family: var(--font-body), system-ui, sans-serif;
+  font-family: var(--font-body), "Segoe UI", system-ui, sans-serif;
+  line-height: 1.6;
   -webkit-font-smoothing: antialiased;
 }
 
 ::selection {
-  background: rgba(87, 160, 164, 0.35);
+  background: rgba(14, 58, 93, 0.18);
 }
 
 * {
@@ -64,9 +103,20 @@ body {
   .panel {
     @apply border bg-[var(--ink-900)] rounded-[3px];
     border-color: var(--line);
+    box-shadow: 0 1px 2px rgba(23, 34, 46, 0.06);
   }
+  /* Editorial eyebrow: small caps, generous tracking — the guide's label rhythm. */
   .label-micro {
-    @apply text-[11px] tracking-wide text-[var(--faint)] font-medium;
+    @apply text-[12px] uppercase tracking-[0.12em] text-[var(--faint)] font-medium;
+  }
+  /* Serif display voice for page headlines; one italic phrase per headline is
+   * the brand signature (see .page-title em). */
+  .page-title {
+    @apply pb-1 font-serif text-[26px] font-medium leading-[1.15] tracking-[-0.02em] text-[var(--chalk)];
+  }
+  .page-title em {
+    @apply italic;
+    color: var(--brand);
   }
   .num {
     font-family: var(--font-mono), ui-monospace, monospace;
@@ -76,7 +126,7 @@ body {
     @apply inline-flex items-center gap-2 rounded-[3px] border px-3 py-1.5 text-sm font-medium transition-colors;
     border-color: var(--line-strong);
     color: var(--chalk);
-    background: var(--ink-800);
+    background: var(--ink-900);
   }
   .btn:hover {
     border-color: var(--faint);
@@ -84,14 +134,17 @@ body {
   }
   .btn-primary {
     @apply inline-flex items-center gap-2 rounded-[3px] px-4 py-2 text-sm font-semibold transition-colors;
-    background: var(--caution);
-    color: #14100a;
+    background: var(--accent);
+    color: var(--on-accent);
   }
   .btn-primary:hover {
-    filter: brightness(1.08);
+    background: var(--accent-strong);
   }
   .btn-primary:disabled {
-    opacity: 0.45;
+    /* Neutral disabled state instead of an opacity stack — faded text on a
+       washed background fails pixel-contrast checks. */
+    background: var(--ink-800);
+    color: var(--dim);
     cursor: not-allowed;
   }
   .btn-ghost {
@@ -109,7 +162,7 @@ body {
   }
   select.field {
     @apply appearance-none pr-8;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%235f7180'/%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%236c7f94'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
     background-position: right 10px center;
   }
@@ -142,15 +195,16 @@ body {
   background: repeating-linear-gradient(
     -45deg,
     var(--caution) 0 8px,
-    var(--ink-950) 8px 16px
+    transparent 8px 16px
   );
-  opacity: 0.7;
+  opacity: 0.85;
 }
 
 mark.trigger {
-  background: rgba(203, 163, 47, 0.22);
-  color: #ecd9a0;
-  border-bottom: 1px solid rgba(203, 163, 47, 0.55);
+  background: rgba(161, 98, 7, 0.14);
+  color: #7a4c05;
+  border-bottom: 1px solid rgba(161, 98, 7, 0.5);
   border-radius: 2px;
   padding: 0 1px;
 }
+

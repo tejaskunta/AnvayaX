@@ -18,6 +18,27 @@ export const TIER_COLOR: Record<string, string> = {
   asif: "var(--tier-asif)",
 };
 
+/* Light-theme hexes mirroring the :root tokens above — for Recharts fills,
+ * which resolve SVG paint attributes and cannot read a CSS var(). */
+export const TIER_HEX: Record<string, string> = {
+  near_miss: "#0f766e",
+  recordable: "#a16207",
+  psif: "#c2410c",
+  asif: "#b91c1c",
+};
+
+export const LINE_HEX = {
+  chalk: "#17222e",
+  dim: "#44576b",
+  faint: "#5b6f84",
+  line: "#d6dce4",
+  lineStrong: "#b9c4d0",
+  brand: "#0e3a5d",
+  accent: "#e0912b",
+  panel: "#ffffff",
+  ink850: "#f2f5f8",
+} as const;
+
 /** Tier chip: label + foreground + translucent background, all inline-safe. */
 export function tierChipStyle(tier: string): CSSProperties {
   const c = TIER_COLOR[tier] ?? "var(--dim)";

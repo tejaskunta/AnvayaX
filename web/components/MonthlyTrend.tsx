@@ -72,7 +72,7 @@ export default function MonthlyTrend({ data }: { data: Point[] }) {
           ) : null
         )}
       </svg>
-      <p className="mt-1 text-[10px] text-[var(--faint)]">
+      <p className="mt-1 text-xs text-[var(--faint)]">
         bars = monthly report volume · line = SIF-potential per 100 (axis 0–60)
       </p>
     </div>

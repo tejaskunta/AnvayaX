@@ -96,8 +96,10 @@ export default function Queue() {
     <div>
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="font-display text-2xl font-bold tracking-tight">Review queue</h1>
-          <p className="mt-1 max-w-xl text-sm leading-6 text-[var(--dim)]">
+          <h1 className="page-title">
+            Review <em>queue</em>
+          </h1>
+          <p className="mt-2 max-w-xl text-[15px] leading-[1.6] text-[var(--dim)]">
             Rows the model is least sure about, ranked by{" "}
             <em className="not-italic text-[var(--chalk)]">acquisition score</em> — a blend of
             predictive entropy and embedding-space novelty. Each decision here is a labelled
@@ -122,7 +124,7 @@ export default function Queue() {
       {data && (
         <div className="mt-6 grid gap-6 lg:grid-cols-[320px_minmax(0,1fr)]">
           {/* Queue list */}
-          <nav aria-label="Queue items" className="space-y-px overflow-hidden rounded-[3px] border border-[var(--line)]">
+          <nav aria-label="Queue items" className="panel max-h-[calc(100vh_-_11rem)] space-y-px self-start overflow-y-auto">
             {data.queue.map((row) => (
               <button
                 key={row.id}
@@ -132,12 +134,12 @@ export default function Queue() {
                 className={`block w-full px-3 py-2.5 text-left transition-colors ${
                   row.id === activeId
                     ? "bg-[var(--ink-800)]"
-                    : "bg-[var(--ink-900)] hover:bg-[var(--ink-850)]"
+                    : "hover:bg-[var(--ink-850)]"
                 }`}
               >
                 <div className="flex items-center gap-2">
                   <span
-                    className="num shrink-0 rounded-[2px] px-1.5 py-0.5 text-[10px] font-semibold"
+                    className="num shrink-0 rounded-[2px] px-1.5 py-0.5 text-xs font-semibold"
                     style={{
                       color: row.acquisitionScore >= 0.6 ? "var(--tier-asif)" : row.acquisitionScore >= 0.45 ? "var(--tier-psif)" : "var(--tier-rec)",
                       background: "color-mix(in srgb, var(--tier-rec) 10%, transparent)",
@@ -147,14 +149,14 @@ export default function Queue() {
                     {row.acquisitionScore.toFixed(2)}
                   </span>
                   <TierChip tier={row.tier} />
-                  <span className="num ml-auto text-[10px] text-[var(--faint)]">{fmtPct(row.confidence, 0)}</span>
+                  <span className="num ml-auto text-xs text-[var(--dim)]">{fmtPct(row.confidence, 0)}</span>
                 </div>
-                <p className="mt-1.5 line-clamp-2 text-[11px] leading-4 text-[var(--dim)]">{row.excerpt}</p>
-                <p className="mt-1 text-[10px] text-[var(--faint)]">{row.site} · {priorityReason(row)}</p>
+                <p className="mt-1.5 line-clamp-2 text-xs leading-4 text-[var(--dim)]">{row.excerpt}</p>
+                <p className="mt-1 text-xs text-[var(--dim)]">{row.site} · {priorityReason(row)}</p>
               </button>
             ))}
             {!data.queue.length && (
-              <p className="bg-[var(--ink-900)] px-3 py-8 text-center text-sm text-[var(--faint)]">
+              <p className="px-3 py-8 text-center text-sm text-[var(--faint)]">
                 Queue is empty — every low-confidence report has been reviewed.
               </p>
             )}
@@ -174,10 +176,10 @@ export default function Queue() {
             <section className="panel p-5" aria-label={`Reviewing ${active.id}`}>
               <div className="flex flex-wrap items-center gap-3">
                 <span className="num text-xs text-[var(--faint)]">{active.id}</span>
-                <span className="text-[11px] text-[var(--faint)]">
+                <span className="text-xs text-[var(--faint)]">
                   {active.site} · {active.occurredAt ?? "date unknown"} · {active.modelVersion}
                 </span>
-                <span className="ml-auto text-[11px] text-[var(--faint)]">{priorityReason(active)}</span>
+                <span className="ml-auto text-xs text-[var(--faint)]">{priorityReason(active)}</span>
               </div>
 
               <p className="mt-3 text-sm leading-6 text-[var(--chalk)]">{active.excerpt}</p>
@@ -200,7 +202,7 @@ export default function Queue() {
                   {active.rule_tags.length ? (
                     <ul className="mt-2 flex flex-wrap gap-1.5">
                       {active.rule_tags.map((t) => (
-                        <li key={t.rule} className="rounded-[2px] border border-[var(--line-strong)] bg-[var(--ink-850)] px-1.5 py-0.5 text-[11px]" title={t.matched_phrases.join(" · ")}>
+                        <li key={t.rule} className="rounded-[2px] border border-[var(--line-strong)] bg-[var(--ink-850)] px-1.5 py-1 text-xs" title={t.matched_phrases.join(" · ")}>
                           <span className="text-[var(--chalk)]">{t.rule}</span>{" "}
                           <span className="num text-[var(--faint)]">{(t.confidence * 100).toFixed(0)}%</span>
                         </li>
@@ -254,7 +256,7 @@ export default function Queue() {
                     />
                   </label>
                 </div>
-                <p className="mt-3 text-[11px] leading-4 text-[var(--faint)]">
+                <p className="mt-3 text-xs leading-4 text-[var(--faint)]">
                   Accept confirms the model label. Correct overrides it and updates the report tier.
                   Both write a row to the corrections table — the training signal the next refresh consumes.
                 </p>
